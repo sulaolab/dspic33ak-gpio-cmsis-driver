@@ -171,7 +171,7 @@ The wrapper does not define interrupt vectors.
 Consumer projects must compile this repository's wrapper source and the vendored
 GPIO core and event layer sources.
 
-Include paths must cover both repositories:
+Include paths must cover both the wrapper and vendored HAL directories:
 
 - `cmsis_driver/`
 - `src/hal_gpio/`
