@@ -195,11 +195,14 @@ void __attribute__((__interrupt__, __no_auto_psv__)) _CNBInterrupt(void)
     dspic33ak_gpio_event_process_isr();
 }
 
-(void)dspic33ak_gpio_set_analog(BOARD_SW3, false);
-(void)Driver_GPIO0.SetDirection(BOARD_SW3, ARM_GPIO_INPUT);
-(void)Driver_GPIO0.SetPullResistor(BOARD_SW3, ARM_GPIO_PULL_UP);
-(void)Driver_GPIO0.Setup(BOARD_SW3, sw3_gpio_event);
-(void)Driver_GPIO0.SetEventTrigger(BOARD_SW3, ARM_GPIO_TRIGGER_EITHER_EDGE);
+void app_gpio_init(void)
+{
+    (void)dspic33ak_gpio_set_analog(BOARD_SW3, false);
+    (void)Driver_GPIO0.SetDirection(BOARD_SW3, ARM_GPIO_INPUT);
+    (void)Driver_GPIO0.SetPullResistor(BOARD_SW3, ARM_GPIO_PULL_UP);
+    (void)Driver_GPIO0.Setup(BOARD_SW3, sw3_gpio_event);
+    (void)Driver_GPIO0.SetEventTrigger(BOARD_SW3, ARM_GPIO_TRIGGER_EITHER_EDGE);
+}
 ```
 
 ## SW3 Source Validation Behavior
