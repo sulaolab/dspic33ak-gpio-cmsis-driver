@@ -14,12 +14,9 @@ Synchronized into this repository under:
 
 ## Current Synchronized Revision
 
-- Upstream commit: 287ad2537944de6178b9f8674e9d73b92e0fb3c0
+- Upstream commit: d19fdc567f2e8ed8842a824c5d7935661256fcf7
 
-This first import is synchronized from the upstream
-`gpio-event-cmsis-wrapper-migration` branch while the GPIO event layer is being
-reviewed. After that branch is merged, the intended steady-state upstream
-branch is `main`.
+This revision is synchronized from the upstream `main` branch.
 
 ## Update Policy
 
