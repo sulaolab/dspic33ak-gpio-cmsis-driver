@@ -1,9 +1,9 @@
 # CMSIS GPIO Wrapper Validation Design
 
-This repository contains a small CMSIS-Driver GPIO-like wrapper on top of the
-external `dspic33ak-gpio-hal` GPIO core and CN event layer. It is deliberately
-experimental: the goal is readable FAE/evaluation code, not a complete
-production GPIO driver.
+This repository contains a small CMSIS-Driver GPIO-like wrapper together with a
+vendor copy of the `dspic33ak-gpio-hal` GPIO core and CN event layer. It is
+deliberately experimental: the goal is readable FAE/evaluation code, not a
+complete production GPIO driver.
 
 The wrapper design and behavior were first validated in the
 `dspic33ak-hal-starter` `cmsis-driver-gpio-official-api-alignment` branch before
@@ -13,11 +13,11 @@ being moved into this standalone wrapper repository.
 
 Implemented files:
 
-- `src/Driver_GPIO_dsPIC33AK.h`
-- `src/Driver_GPIO_dsPIC33AK.c`
+- `cmsis_driver/Driver_GPIO_dsPIC33AK.h`
+- `cmsis_driver/Driver_GPIO_dsPIC33AK.c`
 - `docs/cmsis_driver_gpio_wrapper_design.md`
 
-External dependency headers from `dspic33ak-gpio-hal`:
+Vendored HAL headers under `src/hal_gpio/`:
 
 - `dspic33ak_gpio.h`
 - `dspic33ak_gpio_event.h`
@@ -40,13 +40,14 @@ Consumer app
       -> app-owned CN interrupt vector
 ```
 
-The core GPIO HAL and GPIO event layer are dependencies from
-`dspic33ak-gpio-hal`; they are not copied into this repository. PPS remains in
-the board/application layer and is not moved into the wrapper.
+The core GPIO HAL and GPIO event layer are vendored from `dspic33ak-gpio-hal`
+under `src/hal_gpio/`. PPS remains in the board/application layer and is not
+moved into the wrapper.
 
 ## Types
 
-CMSIS-like GPIO types are isolated in this repository's `src/` wrapper files.
+CMSIS-like GPIO types are isolated in this repository's `cmsis_driver/` wrapper
+files.
 
 `ARM_GPIO_Pin_t` is a local CMSIS-compatible `uint32_t` typedef:
 
@@ -87,9 +88,9 @@ calls `dspic33ak_gpio_write()` internally, but invalid-pin failures are ignored
 because the official-style API has no return path.
 
 Remaining gap: this project still provides a local
-`src/Driver_GPIO_dsPIC33AK.h` header and does not include the official CMSIS
-`Driver_GPIO.h` header. This keeps the validation wrapper self-contained while
-preserving the intended API shape.
+`cmsis_driver/Driver_GPIO_dsPIC33AK.h` header and does not include the official
+CMSIS `Driver_GPIO.h` header. This keeps the validation wrapper self-contained
+while preserving the intended API shape.
 
 ## API Mapping
 
@@ -167,13 +168,13 @@ The wrapper does not define interrupt vectors.
 
 ## Consumer Integration Snippet
 
-Consumer projects must compile this repository's wrapper source and separately
-compile/link the `dspic33ak-gpio-hal` GPIO core and event layer sources.
+Consumer projects must compile this repository's wrapper source and the vendored
+GPIO core and event layer sources.
 
 Include paths must cover both repositories:
 
-- this repository's `src/`
-- `dspic33ak-gpio-hal/src/`
+- `cmsis_driver/`
+- `src/hal_gpio/`
 
 Minimal setup shape:
 

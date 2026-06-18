@@ -32,7 +32,8 @@ useful for the current Phase 1 validation.
 
 ## HAL Impact
 
-- No `dspic33ak_gpio` core sources are copied into this repository.
-- No `dspic33ak_gpio_event` sources are copied into this repository.
-- The GPIO core and event layer remain dependencies from `dspic33ak-gpio-hal`.
+- The `dspic33ak_gpio` core sources are vendored under `src/hal_gpio/`.
+- The `dspic33ak_gpio_event` sources are vendored under `src/hal_gpio/`.
+- The GPIO core and event layer remain synchronized from `dspic33ak-gpio-hal`,
+  which is the upstream source of truth.
 - PPS remains a board/application responsibility.
