@@ -34,6 +34,6 @@ useful for the current Phase 1 validation.
 
 - The `dspic33ak_gpio` core sources are vendored under `src/hal_gpio/`.
 - The `dspic33ak_gpio_event` sources are vendored under `src/hal_gpio/`.
-- The GPIO core and event layer remain synchronized from `dspic33ak-gpio-hal`,
+- The GPIO core and event layer remain synchronized from `dspic33ak-hal-gpio`,
   which is the upstream source of truth.
 - PPS remains a board/application responsibility.

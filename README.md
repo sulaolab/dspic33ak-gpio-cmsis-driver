@@ -40,7 +40,7 @@ hardware validation project before being moved here.
 
 The HAL vendor copy has been imported from:
 
-- https://github.com/sulaolab/dspic33ak-gpio-hal
+- https://github.com/sulaolab/dspic33ak-hal-gpio
 
 The CMSIS-Driver wrapper files are provided under `cmsis_driver/`.
 
@@ -102,7 +102,7 @@ py -3 tools/sync_hal_from_upstream.py --branch gpio-event-cmsis-wrapper-migratio
 
 The HAL-only repository is the upstream source of truth:
 
-- https://github.com/sulaolab/dspic33ak-gpio-hal
+- https://github.com/sulaolab/dspic33ak-hal-gpio
 
 HAL fixes should be applied to the upstream HAL repository first, then
 synchronized into this repository.
@@ -113,7 +113,7 @@ CMSIS-Driver wrapper changes should be made in this repository.
 
 This repository does not intend to:
 
-* Replace `dspic33ak-gpio-hal`
+* Replace `dspic33ak-hal-gpio`
 * Move PPS configuration into the GPIO driver
 * Own interrupt vectors inside the driver
 * Provide production-certified code
@@ -122,7 +122,7 @@ This repository does not intend to:
 
 ## Related Repositories
 
-* [dspic33ak-gpio-hal](https://github.com/sulaolab/dspic33ak-gpio-hal)
+* [dspic33ak-hal-gpio](https://github.com/sulaolab/dspic33ak-hal-gpio)
 * [dspic33ak-hal-starter](https://github.com/sulaolab/dspic33ak-hal-starter)
 
 ## License

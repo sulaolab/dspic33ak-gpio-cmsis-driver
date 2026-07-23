@@ -4,7 +4,7 @@ The files in this directory are a vendor copy of the dsPIC33AK GPIO HAL.
 
 Upstream repository:
 
-- Repository: https://github.com/sulaolab/dspic33ak-gpio-hal
+- Repository: https://github.com/sulaolab/dspic33ak-hal-gpio
 - Branch: main
 - Source directory: src/
 

@@ -1,7 +1,7 @@
 # CMSIS GPIO Wrapper Validation Design
 
 This repository contains a small CMSIS-Driver GPIO-like wrapper together with a
-vendor copy of the `dspic33ak-gpio-hal` GPIO core and CN event layer. It is
+vendor copy of the `dspic33ak-hal-gpio` GPIO core and CN event layer. It is
 deliberately experimental: the goal is readable FAE/evaluation code, not a
 complete production GPIO driver.
 
@@ -40,7 +40,7 @@ Consumer app
       -> app-owned CN interrupt vector
 ```
 
-The core GPIO HAL and GPIO event layer are vendored from `dspic33ak-gpio-hal`
+The core GPIO HAL and GPIO event layer are vendored from `dspic33ak-hal-gpio`
 under `src/hal_gpio/`. PPS remains in the board/application layer and is not
 moved into the wrapper.
 
@@ -155,7 +155,7 @@ before calling the CMSIS callback:
 - CMSIS `NONE` detaches the pin from the HAL event layer
 
 The application still owns the CN interrupt vector. A consumer app typically
-forwards the vector to the event layer provided by `dspic33ak-gpio-hal`:
+forwards the vector to the event layer provided by `dspic33ak-hal-gpio`:
 
 ```c
 void __attribute__((__interrupt__, __no_auto_psv__)) _CNBInterrupt(void)
