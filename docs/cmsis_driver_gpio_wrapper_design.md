@@ -1,7 +1,7 @@
 # CMSIS GPIO Wrapper Validation Design
 
 This repository contains a small CMSIS-Driver GPIO-like wrapper together with a
-vendor copy of the `dspic33ak-hal-gpio` GPIO core and CN event layer. It is
+vendor copy of the `nora-hal-dspic33ak-gpio` GPIO core and CN event layer. It is
 deliberately experimental: the goal is readable FAE/evaluation code, not a
 complete production GPIO driver.
 
@@ -19,8 +19,8 @@ Implemented files:
 
 Vendored HAL headers under `src/hal_gpio/`:
 
-- `dspic33ak_gpio.h`
-- `dspic33ak_gpio_event.h`
+- `nora_gpio.h`
+- `nora_gpio_event.h`
 
 The wrapper exports one instance:
 
@@ -35,12 +35,12 @@ The wrapper sits above the existing layers:
 ```text
 Consumer app
   -> Driver_GPIO0                    CMSIS-Driver-like API
-    -> dspic33ak_gpio                ANSEL/TRIS/LAT/PORT/ODC/CNPU/CNPD
-    -> dspic33ak_gpio_event          CN edge dispatch
+    -> nora_gpio                ANSEL/TRIS/LAT/PORT/ODC/CNPU/CNPD
+    -> nora_gpio_event          CN edge dispatch
       -> app-owned CN interrupt vector
 ```
 
-The core GPIO HAL and GPIO event layer are vendored from `dspic33ak-hal-gpio`
+The core GPIO HAL and GPIO event layer are vendored from `nora-hal-dspic33ak-gpio`
 under `src/hal_gpio/`. PPS remains in the board/application layer and is not
 moved into the wrapper.
 
@@ -56,7 +56,7 @@ typedef uint32_t ARM_GPIO_Pin_t;
 ```
 
 The value layout remains compatible with the existing packed HAL pin value from
-`DSPIC33AK_GPIO_PIN(port, bit)`. The wrapper casts to `dspic33ak_gpio_pin_t`
+`NORA_GPIO_PIN(port, bit)`. The wrapper casts to `nora_gpio_pin_t`
 internally only after validating the packed port/bit slot.
 
 This keeps the wrapper thin and avoids introducing a second pin database for
@@ -84,7 +84,7 @@ The event bits include:
 - `ARM_GPIO_EVENT_EITHER_EDGE`
 
 `SetOutput(pin, val)` now follows the official void-return signature. It still
-calls `dspic33ak_gpio_write()` internally, but invalid-pin failures are ignored
+calls `nora_gpio_write()` internally, but invalid-pin failures are ignored
 because the official-style API has no return path.
 
 Remaining gap: this project still provides a local
@@ -108,12 +108,12 @@ Mapping to existing HAL calls:
 
 | Wrapper API | HAL mapping |
 | --- | --- |
-| `SetDirection(ARM_GPIO_INPUT/ARM_GPIO_OUTPUT)` | `dspic33ak_gpio_set_direction()` |
-| `SetOutputMode(ARM_GPIO_PUSH_PULL/ARM_GPIO_OPEN_DRAIN)` | `dspic33ak_gpio_set_open_drain()` |
-| `SetPullResistor(ARM_GPIO_PULL_NONE/UP/DOWN)` | `dspic33ak_gpio_set_pull()` |
-| `SetOutput()` | `dspic33ak_gpio_write()` |
-| `GetInput()` | `dspic33ak_gpio_read()` |
-| `SetEventTrigger()` | `dspic33ak_gpio_event_attach()` / `detach()` |
+| `SetDirection(ARM_GPIO_INPUT/ARM_GPIO_OUTPUT)` | `nora_gpio_set_direction()` |
+| `SetOutputMode(ARM_GPIO_PUSH_PULL/ARM_GPIO_OPEN_DRAIN)` | `nora_gpio_set_open_drain()` |
+| `SetPullResistor(ARM_GPIO_PULL_NONE/UP/DOWN)` | `nora_gpio_set_pull()` |
+| `SetOutput()` | `nora_gpio_write()` |
+| `GetInput()` | `nora_gpio_read()` |
+| `SetEventTrigger()` | `nora_gpio_event_attach()` / `detach()` |
 
 ## `Setup()` Validation Policy
 
@@ -143,24 +143,24 @@ thin and avoid adding a new HAL pin validation API.
 ## Event Bridge
 
 The GPIO event HAL currently supports `EDGE_EITHER` attach. The CMSIS wrapper
-therefore always attaches the HAL event layer with `DSPIC33AK_GPIO_EVENT_EDGE_EITHER`
+therefore always attaches the HAL event layer with `NORA_GPIO_EVENT_EDGE_EITHER`
 for rising, falling, and either-edge requests.
 
 The wrapper stores the requested CMSIS trigger per pin and filters the HAL event
 before calling the CMSIS callback:
 
-- HAL `DSPIC33AK_GPIO_EVENT_EDGE_RISING` maps to `ARM_GPIO_EVENT_RISING_EDGE`
-- HAL `DSPIC33AK_GPIO_EVENT_EDGE_FALLING` maps to `ARM_GPIO_EVENT_FALLING_EDGE`
+- HAL `NORA_GPIO_EVENT_EDGE_RISING` maps to `ARM_GPIO_EVENT_RISING_EDGE`
+- HAL `NORA_GPIO_EVENT_EDGE_FALLING` maps to `ARM_GPIO_EVENT_FALLING_EDGE`
 - CMSIS `RISING`, `FALLING`, and `EITHER` are filtered in the wrapper
 - CMSIS `NONE` detaches the pin from the HAL event layer
 
 The application still owns the CN interrupt vector. A consumer app typically
-forwards the vector to the event layer provided by `dspic33ak-hal-gpio`:
+forwards the vector to the event layer provided by `nora-hal-dspic33ak-gpio`:
 
 ```c
 void __attribute__((__interrupt__, __no_auto_psv__)) _CNBInterrupt(void)
 {
-    dspic33ak_gpio_event_process_isr();
+    nora_gpio_event_process_isr();
 }
 ```
 
@@ -180,8 +180,8 @@ Minimal setup shape:
 
 ```c
 #include "Driver_GPIO_dsPIC33AK.h"
-#include "dspic33ak_gpio.h"
-#include "dspic33ak_gpio_event.h"
+#include "nora_gpio.h"
+#include "nora_gpio_event.h"
 
 static volatile uint32_t sw3_event_flags;
 
@@ -193,12 +193,12 @@ static void sw3_gpio_event(ARM_GPIO_Pin_t pin, uint32_t event)
 
 void __attribute__((__interrupt__, __no_auto_psv__)) _CNBInterrupt(void)
 {
-    dspic33ak_gpio_event_process_isr();
+    nora_gpio_event_process_isr();
 }
 
 void app_gpio_init(void)
 {
-    (void)dspic33ak_gpio_set_analog(BOARD_SW3, false);
+    (void)nora_gpio_set_analog(BOARD_SW3, false);
     (void)Driver_GPIO0.SetDirection(BOARD_SW3, ARM_GPIO_INPUT);
     (void)Driver_GPIO0.SetPullResistor(BOARD_SW3, ARM_GPIO_PULL_UP);
     (void)Driver_GPIO0.Setup(BOARD_SW3, sw3_gpio_event);

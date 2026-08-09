@@ -1,21 +1,29 @@
 # dspic33ak-gpio-cmsis-driver
 
-Experimental CMSIS-Driver GPIO-style wrapper package for the dsPIC33AK GPIO HAL.
+Experimental CMSIS-Driver GPIO-style wrapper package for the NORA GPIO HAL on
+dsPIC33AK.
 
 This repository provides a CMSIS-Driver GPIO-style wrapper together with a
-vendor copy of the dsPIC33AK GPIO HAL. It is intended for evaluation, FAE demos,
+vendor copy of the NORA GPIO HAL. It is intended for evaluation, FAE demos,
 and early software architecture experiments.
+
+The HAL's public API is `nora_gpio_*`, and the upstream repository is
+`nora-hal-dspic33ak-gpio`. Both were previously named for the part
+(`dspic33ak_gpio_*` in `dspic33ak-hal-gpio`). The old identifiers are **replaced**,
+not deprecated: there are no compatibility aliases, so a consumer moving to this
+revision renames its call sites. Public headers carry no chip tag — the
+`_dspic33ak` tag marks backend implementation files only.
 
 ## Repository Layout
 
 ```text
 src/
   hal_gpio/
-    dspic33ak_gpio.c
-    dspic33ak_gpio.h
-    dspic33ak_gpio_event.c
-    dspic33ak_gpio_event.h
-    dspic33ak_gpio_reg.h
+    nora_gpio.h                      (public GPIO API)
+    nora_gpio_event.h                (public CN event API)
+    nora_gpio_dspic33ak.c            (backend)
+    nora_gpio_event_dspic33ak.c      (backend)
+    nora_gpio_dspic33ak_reg.h        (backend register layer)
     UPSTREAM.md
 
 tools/
@@ -40,7 +48,7 @@ hardware validation project before being moved here.
 
 The HAL vendor copy has been imported from:
 
-- https://github.com/sulaolab/dspic33ak-hal-gpio
+- https://github.com/sulaolab/nora-hal-dspic33ak-gpio
 
 The CMSIS-Driver wrapper files are provided under `cmsis_driver/`.
 
@@ -74,7 +82,7 @@ Consumer projects should:
 * define board-level packed pin names using the GPIO HAL pin representation
 * configure ANSEL/TRIS/pull policy before attaching events as needed
 * own CN interrupt vectors in the application
-* call `dspic33ak_gpio_event_process_isr()` from the app-owned CN vector
+* call `nora_gpio_event_process_isr()` from the app-owned CN vector
 
 PPS remains a board/application responsibility and is not moved into this
 wrapper.
@@ -92,17 +100,25 @@ py -3 tools/sync_hal_from_upstream.py
 python tools/sync_hal_from_upstream.py
 ```
 
-For temporary pre-main validation, a branch or tag can be selected explicitly:
+The sync fails rather than proceeding if upstream ships a source file this
+repository neither vendors nor explicitly excludes. A literal file list silently
+skips files upstream adds, which is how a vendored HAL goes stale without anyone
+noticing, so every omission has to be a decision on record. The current exclusion
+is `nora_pps.{h,c}` — see `src/hal_gpio/UPSTREAM.md`.
+
+For temporary pre-main validation, a branch or tag can be selected explicitly.
+Until the NORA rename lands on upstream `main`, this is required rather than
+optional:
 
 ```powershell
-py -3 tools/sync_hal_from_upstream.py --branch gpio-event-cmsis-wrapper-migration
+py -3 tools/sync_hal_from_upstream.py --branch refactor/nora-hal
 ```
 
 ## Upstream HAL Policy
 
 The HAL-only repository is the upstream source of truth:
 
-- https://github.com/sulaolab/dspic33ak-hal-gpio
+- https://github.com/sulaolab/nora-hal-dspic33ak-gpio
 
 HAL fixes should be applied to the upstream HAL repository first, then
 synchronized into this repository.
@@ -113,7 +129,7 @@ CMSIS-Driver wrapper changes should be made in this repository.
 
 This repository does not intend to:
 
-* Replace `dspic33ak-hal-gpio`
+* Replace `nora-hal-dspic33ak-gpio`
 * Move PPS configuration into the GPIO driver
 * Own interrupt vectors inside the driver
 * Provide production-certified code
@@ -122,7 +138,7 @@ This repository does not intend to:
 
 ## Related Repositories
 
-* [dspic33ak-hal-gpio](https://github.com/sulaolab/dspic33ak-hal-gpio)
+* [nora-hal-dspic33ak-gpio](https://github.com/sulaolab/nora-hal-dspic33ak-gpio)
 * [dspic33ak-hal-starter](https://github.com/sulaolab/dspic33ak-hal-starter)
 
 ## License
