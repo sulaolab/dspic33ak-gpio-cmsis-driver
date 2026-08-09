@@ -1,8 +1,8 @@
 /*
  * Driver_GPIO_dsPIC33AK.c
  * -----------------------
- * CMSIS-Driver GPIO-like wrapper implemented on top of dspic33ak_gpio and
- * dspic33ak_gpio_event. This validation layer does not own PPS or interrupt
+ * CMSIS-Driver GPIO-like wrapper implemented on top of nora_gpio and
+ * nora_gpio_event. This validation layer does not own PPS or interrupt
  * vectors.
  */
 
@@ -11,7 +11,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "dspic33ak_gpio_event.h"
+#include "nora_gpio_event.h"
 
 
 //===========================================================
@@ -45,13 +45,13 @@ static bool                  driver_gpio_pin_index(ARM_GPIO_Pin_t pin,
                                                    uint8_t *port_index,
                                                    uint8_t *bit_index);
 static driver_gpio_slot_t   *driver_gpio_slot_for(ARM_GPIO_Pin_t pin);
-static dspic33ak_gpio_pull_t driver_gpio_pull_to_hal(ARM_GPIO_PULL_RESISTOR resistor);
+static nora_gpio_pull_t driver_gpio_pull_to_hal(ARM_GPIO_PULL_RESISTOR resistor);
 static bool                  driver_gpio_trigger_matches(ARM_GPIO_EVENT_TRIGGER trigger,
                                                          uint32_t event);
 static bool                  driver_gpio_to_hal_pin(ARM_GPIO_Pin_t pin,
-                                                    dspic33ak_gpio_pin_t *hal_pin);
-static void                  driver_gpio_hal_event(dspic33ak_gpio_pin_t pin,
-                                                   dspic33ak_gpio_event_edge_t edge,
+                                                    nora_gpio_pin_t *hal_pin);
+static void                  driver_gpio_hal_event(nora_gpio_pin_t pin,
+                                                   nora_gpio_event_edge_t edge,
                                                    void *user_data);
 
 
@@ -93,8 +93,8 @@ static int32_t Driver_GPIO_Setup(ARM_GPIO_Pin_t pin, ARM_GPIO_SignalEvent_t cb_e
 
 static int32_t Driver_GPIO_SetDirection(ARM_GPIO_Pin_t pin, ARM_GPIO_DIRECTION direction)
 {
-    dspic33ak_gpio_pin_t hal_pin;
-    dspic33ak_gpio_dir_t hal_direction;
+    nora_gpio_pin_t hal_pin;
+    nora_gpio_dir_t hal_direction;
 
     if (!driver_gpio_to_hal_pin(pin, &hal_pin))
     {
@@ -103,23 +103,23 @@ static int32_t Driver_GPIO_SetDirection(ARM_GPIO_Pin_t pin, ARM_GPIO_DIRECTION d
 
     if (direction == ARM_GPIO_INPUT)
     {
-        hal_direction = DSPIC33AK_GPIO_DIR_INPUT;
+        hal_direction = NORA_GPIO_DIR_INPUT;
     }
     else if (direction == ARM_GPIO_OUTPUT)
     {
-        hal_direction = DSPIC33AK_GPIO_DIR_OUTPUT;
+        hal_direction = NORA_GPIO_DIR_OUTPUT;
     }
     else
     {
         return ARM_DRIVER_ERROR_PARAMETER;
     }
 
-    return dspic33ak_gpio_set_direction(hal_pin, hal_direction) ? ARM_DRIVER_OK : ARM_DRIVER_ERROR_PARAMETER;
+    return nora_gpio_set_direction(hal_pin, hal_direction) ? ARM_DRIVER_OK : ARM_DRIVER_ERROR_PARAMETER;
 }
 
 static int32_t Driver_GPIO_SetOutputMode(ARM_GPIO_Pin_t pin, ARM_GPIO_OUTPUT_MODE mode)
 {
-    dspic33ak_gpio_pin_t hal_pin;
+    nora_gpio_pin_t hal_pin;
     bool open_drain;
 
     if (!driver_gpio_to_hal_pin(pin, &hal_pin))
@@ -140,13 +140,13 @@ static int32_t Driver_GPIO_SetOutputMode(ARM_GPIO_Pin_t pin, ARM_GPIO_OUTPUT_MOD
         return ARM_DRIVER_ERROR_PARAMETER;
     }
 
-    return dspic33ak_gpio_set_open_drain(hal_pin, open_drain) ? ARM_DRIVER_OK : ARM_DRIVER_ERROR_PARAMETER;
+    return nora_gpio_set_open_drain(hal_pin, open_drain) ? ARM_DRIVER_OK : ARM_DRIVER_ERROR_PARAMETER;
 }
 
 static int32_t Driver_GPIO_SetPullResistor(ARM_GPIO_Pin_t pin, ARM_GPIO_PULL_RESISTOR resistor)
 {
-    dspic33ak_gpio_pin_t hal_pin;
-    dspic33ak_gpio_pull_t hal_pull = driver_gpio_pull_to_hal(resistor);
+    nora_gpio_pin_t hal_pin;
+    nora_gpio_pull_t hal_pull = driver_gpio_pull_to_hal(resistor);
 
     if (!driver_gpio_to_hal_pin(pin, &hal_pin))
     {
@@ -160,13 +160,13 @@ static int32_t Driver_GPIO_SetPullResistor(ARM_GPIO_Pin_t pin, ARM_GPIO_PULL_RES
         return ARM_DRIVER_ERROR_PARAMETER;
     }
 
-    return dspic33ak_gpio_set_pull(hal_pin, hal_pull) ? ARM_DRIVER_OK : ARM_DRIVER_ERROR_PARAMETER;
+    return nora_gpio_set_pull(hal_pin, hal_pull) ? ARM_DRIVER_OK : ARM_DRIVER_ERROR_PARAMETER;
 }
 
 static int32_t Driver_GPIO_SetEventTrigger(ARM_GPIO_Pin_t pin, ARM_GPIO_EVENT_TRIGGER trigger)
 {
     driver_gpio_slot_t *slot = driver_gpio_slot_for(pin);
-    dspic33ak_gpio_pin_t hal_pin;
+    nora_gpio_pin_t hal_pin;
 
     if ((slot == 0) || !driver_gpio_to_hal_pin(pin, &hal_pin))
     {
@@ -175,7 +175,7 @@ static int32_t Driver_GPIO_SetEventTrigger(ARM_GPIO_Pin_t pin, ARM_GPIO_EVENT_TR
 
     if (trigger == ARM_GPIO_TRIGGER_NONE)
     {
-        if (!dspic33ak_gpio_event_detach(hal_pin))
+        if (!nora_gpio_event_detach(hal_pin))
         {
             return ARM_DRIVER_ERROR_PARAMETER;
         }
@@ -195,8 +195,8 @@ static int32_t Driver_GPIO_SetEventTrigger(ARM_GPIO_Pin_t pin, ARM_GPIO_EVENT_TR
         return ARM_DRIVER_ERROR_PARAMETER;
     }
 
-    if (!dspic33ak_gpio_event_attach(hal_pin,
-                                     DSPIC33AK_GPIO_EVENT_EDGE_EITHER,
+    if (!nora_gpio_event_attach(hal_pin,
+                                     NORA_GPIO_EVENT_EDGE_EITHER,
                                      driver_gpio_hal_event,
                                      slot))
     {
@@ -210,26 +210,26 @@ static int32_t Driver_GPIO_SetEventTrigger(ARM_GPIO_Pin_t pin, ARM_GPIO_EVENT_TR
 
 static void Driver_GPIO_SetOutput(ARM_GPIO_Pin_t pin, uint32_t val)
 {
-    dspic33ak_gpio_pin_t hal_pin;
+    nora_gpio_pin_t hal_pin;
 
     if (!driver_gpio_to_hal_pin(pin, &hal_pin))
     {
         return;
     }
 
-    (void)dspic33ak_gpio_write(hal_pin, (val != 0u));
+    (void)nora_gpio_write(hal_pin, (val != 0u));
 }
 
 static uint32_t Driver_GPIO_GetInput(ARM_GPIO_Pin_t pin)
 {
-    dspic33ak_gpio_pin_t hal_pin;
+    nora_gpio_pin_t hal_pin;
 
     if (!driver_gpio_to_hal_pin(pin, &hal_pin))
     {
         return 0u;
     }
 
-    return dspic33ak_gpio_read(hal_pin) ? 1u : 0u;
+    return nora_gpio_read(hal_pin) ? 1u : 0u;
 }
 
 static bool driver_gpio_pin_index(ARM_GPIO_Pin_t pin, uint8_t *port_index, uint8_t *bit_index)
@@ -260,17 +260,17 @@ static driver_gpio_slot_t *driver_gpio_slot_for(ARM_GPIO_Pin_t pin)
     return &s_gpio_slots[port_index][bit_index];
 }
 
-static dspic33ak_gpio_pull_t driver_gpio_pull_to_hal(ARM_GPIO_PULL_RESISTOR resistor)
+static nora_gpio_pull_t driver_gpio_pull_to_hal(ARM_GPIO_PULL_RESISTOR resistor)
 {
     switch (resistor)
     {
     case ARM_GPIO_PULL_UP:
-        return DSPIC33AK_GPIO_PULL_UP;
+        return NORA_GPIO_PULL_UP;
     case ARM_GPIO_PULL_DOWN:
-        return DSPIC33AK_GPIO_PULL_DOWN;
+        return NORA_GPIO_PULL_DOWN;
     case ARM_GPIO_PULL_NONE:
     default:
-        return DSPIC33AK_GPIO_PULL_NONE;
+        return NORA_GPIO_PULL_NONE;
     }
 }
 
@@ -293,7 +293,7 @@ static bool driver_gpio_trigger_matches(ARM_GPIO_EVENT_TRIGGER trigger, uint32_t
     return false;
 }
 
-static bool driver_gpio_to_hal_pin(ARM_GPIO_Pin_t pin, dspic33ak_gpio_pin_t *hal_pin)
+static bool driver_gpio_to_hal_pin(ARM_GPIO_Pin_t pin, nora_gpio_pin_t *hal_pin)
 {
     uint8_t port_index;
     uint8_t bit_index;
@@ -305,12 +305,12 @@ static bool driver_gpio_to_hal_pin(ARM_GPIO_Pin_t pin, dspic33ak_gpio_pin_t *hal
 
     (void)port_index;
     (void)bit_index;
-    *hal_pin = (dspic33ak_gpio_pin_t)pin;
+    *hal_pin = (nora_gpio_pin_t)pin;
     return true;
 }
 
-static void driver_gpio_hal_event(dspic33ak_gpio_pin_t pin,
-                                  dspic33ak_gpio_event_edge_t edge,
+static void driver_gpio_hal_event(nora_gpio_pin_t pin,
+                                  nora_gpio_event_edge_t edge,
                                   void *user_data)
 {
     driver_gpio_slot_t *slot = (driver_gpio_slot_t *)user_data;
@@ -321,11 +321,11 @@ static void driver_gpio_hal_event(dspic33ak_gpio_pin_t pin,
         return;
     }
 
-    if (edge == DSPIC33AK_GPIO_EVENT_EDGE_RISING)
+    if (edge == NORA_GPIO_EVENT_EDGE_RISING)
     {
         event = ARM_GPIO_EVENT_RISING_EDGE;
     }
-    else if (edge == DSPIC33AK_GPIO_EVENT_EDGE_FALLING)
+    else if (edge == NORA_GPIO_EVENT_EDGE_FALLING)
     {
         event = ARM_GPIO_EVENT_FALLING_EDGE;
     }

@@ -8,12 +8,12 @@
  *
  * This is intentionally isolated from the core HAL. ARM_GPIO_Pin_t is a
  * 32-bit local CMSIS-compatible handle; values remain compatible with the
- * existing packed dspic33ak_gpio_pin_t: (port << 4) | bit.
+ * existing packed nora_gpio_pin_t: (port << 4) | bit.
  */
 
 #include <stdint.h>
 
-#include "dspic33ak_gpio.h"
+#include "nora_gpio.h"
 
 #ifdef __cplusplus
 extern "C" {
