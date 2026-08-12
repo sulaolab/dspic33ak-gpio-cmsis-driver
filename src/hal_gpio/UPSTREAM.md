@@ -5,7 +5,7 @@ The files in this directory are a vendor copy of the NORA GPIO HAL.
 Upstream repository:
 
 - Repository: https://github.com/sulaolab/nora-hal-dspic33ak-gpio
-- Branch: refactor/nora-hal
+- Branch: main
 - Source directory: src/
 
 Synchronized into this repository under:
@@ -29,17 +29,9 @@ upstream file that is neither vendored nor listed there.
 
 - Upstream commit: 4db8e11c21b555651a68b4772cf4484a68452563
 
-This revision was taken from the upstream `refactor/nora-hal` branch, which is the
-NORA rename waiting to land. Until the fleet-wide landing puts those bytes on
-upstream `main`, syncing without an explicit branch will pull the older
-`dspic33ak_*` API and break this repository:
-
-```sh
-python tools/sync_hal_from_upstream.py --branch refactor/nora-hal
-```
-
-After the landing, plain `python tools/sync_hal_from_upstream.py` is correct again
-and this note can go.
+This revision is on upstream `main`: the fleet-wide NORA landing (2026-08-13)
+fast-forwarded `main` onto the former `refactor/nora-hal` branch, so plain
+`python tools/sync_hal_from_upstream.py` pulls exactly these bytes.
 
 ## Update Policy
 
