@@ -39,6 +39,11 @@ INTENTIONALLY_NOT_VENDORED = {
     "nora_pps.h": "PPS is out of scope: this wrapper is a GPIO-only validation "
                   "layer and does not own peripheral pin select or IRQ routing.",
     "nora_pps_dspic33ak.c": "see nora_pps.h",
+    "nora_gpio_table.h": "the optional declarative pin table is a whole-board "
+                         "bring-up convenience layered on top of nora_gpio.h. The "
+                         "CMSIS-Driver GPIO API configures one pin per call, so the "
+                         "wrapper neither calls it nor needs it to compile.",
+    "nora_gpio_table_dspic33ak.c": "see nora_gpio_table.h",
 }
 
 

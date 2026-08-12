@@ -27,7 +27,7 @@ upstream file that is neither vendored nor listed there.
 
 ## Current Synchronized Revision
 
-- Upstream commit: a1de0fd695bd63ee922e2083df613213d2eb4fda
+- Upstream commit: 4db8e11c21b555651a68b4772cf4484a68452563
 
 This revision was taken from the upstream `refactor/nora-hal` branch, which is the
 NORA rename waiting to land. Until the fleet-wide landing puts those bytes on
